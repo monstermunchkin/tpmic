@@ -31,7 +31,10 @@ void set_led(int);
 void set_mic(int);
 
 int main(int argc, char *argv[]) {
-	if (argc > 1) {
+	if (argc != 2) {
+		printf("usage: %s {init|toggle}\n", *argv);
+		return -1;
+	} else {
 		if (strncmp(argv[1], "init", 4) == 0)
 			set_led(is_mic_on());
 		else if (strncmp(argv[1], "toggle", 6) == 0)
