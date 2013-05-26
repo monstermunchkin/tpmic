@@ -99,9 +99,6 @@ void set_led(int val) {
 		perror("fopen");
 		return;
 	}
-	if (val == 0)
-		fputs("14 on", pFile);
-	else if (val == 1)
-		fputs("14 off", pFile);
+	fprintf(pFile, "14 %s", val == 0 ? "on" : "off");
 	fclose(pFile);
 }
