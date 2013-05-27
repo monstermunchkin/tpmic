@@ -26,71 +26,57 @@
 #include <string.h>
 #include <alsa/asoundlib.h>
 
-int is_mic_on(void);
+int is_mic_on(snd_mixer_elem_t *);
 void set_led(int);
-void set_mic(int);
+void set_mic(snd_mixer_elem_t *, int);
+void mixer_open(snd_mixer_t **, snd_mixer_elem_t **);
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
 		printf("usage: %s {init|toggle}\n", *argv);
 		return -1;
 	} else {
+		snd_mixer_t *handle = NULL;
+		snd_mixer_elem_t *elem = NULL;
+		mixer_open(&handle, &elem);
 		if (strncmp(argv[1], "init", 4) == 0)
-			set_led(is_mic_on());
+			set_led(is_mic_on(elem));
 		else if (strncmp(argv[1], "toggle", 6) == 0)
-			set_mic(!is_mic_on());
+			set_mic(elem, !is_mic_on(elem));
+		snd_mixer_close(handle);
 	}
 	return 0;
 }
 
-int is_mic_on(void) {
-	snd_mixer_t *handle;
-	snd_mixer_selem_id_t *sid;
-	const char *card = "default";
-	const char *selem_name = "Capture";
-
-	snd_mixer_open(&handle, 0);
-	snd_mixer_attach(handle, card);
-	snd_mixer_selem_register(handle, NULL, NULL);
-	snd_mixer_load(handle);
-
-	snd_mixer_selem_id_alloca(&sid);
-	snd_mixer_selem_id_set_index(sid, 0);
-	snd_mixer_selem_id_set_name(sid, selem_name);
-	snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
-
+int is_mic_on(snd_mixer_elem_t *elem) {
 	int val;
-	if (snd_mixer_selem_has_capture_switch(elem)) {
-		snd_mixer_selem_get_capture_switch(elem, SND_MIXER_SCHN_FRONT_LEFT,
+	if (elem && snd_mixer_selem_has_capture_switch(elem))
+		snd_mixer_selem_get_capture_switch(elem,
+				SND_MIXER_SCHN_FRONT_LEFT,
 				&val);
-	}
-
-	snd_mixer_close(handle);
 	return val;
 }
 
-void set_mic(int val) {
-	snd_mixer_t *handle;
+void set_mic(snd_mixer_elem_t *elem, int val) {
+	if (elem && snd_mixer_selem_has_capture_switch(elem))
+		snd_mixer_selem_set_capture_switch_all(elem, val);
+	set_led(val);
+}
+
+void mixer_open(snd_mixer_t **handle, snd_mixer_elem_t **elem) {
 	snd_mixer_selem_id_t *sid;
 	const char *card = "default";
 	const char *selem_name = "Capture";
 
-	snd_mixer_open(&handle, 0);
-	snd_mixer_attach(handle, card);
-	snd_mixer_selem_register(handle, NULL, NULL);
-	snd_mixer_load(handle);
+	snd_mixer_open(handle, 0);
+	snd_mixer_attach(*handle, card);
+	snd_mixer_selem_register(*handle, NULL, NULL);
+	snd_mixer_load(*handle);
 
 	snd_mixer_selem_id_alloca(&sid);
 	snd_mixer_selem_id_set_index(sid, 0);
 	snd_mixer_selem_id_set_name(sid, selem_name);
-	snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
-
-	if (snd_mixer_selem_has_capture_switch(elem)) {
-		snd_mixer_selem_set_capture_switch_all(elem, val);
-	}
-
-	snd_mixer_close(handle);
-	set_led(val);
+	*elem = snd_mixer_find_selem(*handle, sid);
 }
 
 void set_led(int val) {
