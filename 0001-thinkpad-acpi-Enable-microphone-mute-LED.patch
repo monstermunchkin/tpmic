@@ -1,0 +1,34 @@
+From 8257e210cfbca378a3bc4caa4aa2bf918b5d7846 Mon Sep 17 00:00:00 2001
+From: Thomas Hipp <thomashipp@gmail.com>
+Date: Sun, 6 Oct 2013 17:41:16 +0200
+Subject: [PATCH] thinkpad-acpi: Enable microphone mute LED
+
+---
+ drivers/platform/x86/thinkpad_acpi.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
+index 03ca6c1..586b86c 100644
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -5019,6 +5019,8 @@ static const char * const tpacpi_led_names[TPACPI_LED_NUMLEDS] = {
+ 	"tpacpi::unknown_led2",
+ 	"tpacpi::unknown_led3",
+ 	"tpacpi::thinkvantage",
++	"tpacpi::unknown_led4",
++	"tpacpi::micmute",
+ };
+ #define TPACPI_SAFE_LEDS	0x1081U
+ 
+@@ -5243,7 +5245,7 @@ static const struct tpacpi_quirk led_useful_qtable[] __initconst = {
+ 	{ /* Lenovo */
+ 	  .vendor = PCI_VENDOR_ID_LENOVO,
+ 	  .bios = TPACPI_MATCH_ANY, .ec = TPACPI_MATCH_ANY,
+-	  .quirks = 0x1fffU,
++	  .quirks = 0x5fffU,
+ 	},
+ 	{ /* IBM ThinkPads with no EC version string */
+ 	  .vendor = PCI_VENDOR_ID_IBM,
+-- 
+1.8.4
+
